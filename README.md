@@ -97,8 +97,3 @@ Počty sa sčítajú a pri každej položke vidíš, koľko z nej pripadá na kt
 - Prenos stavu: QR kód (komprimovaný LZ-String v URL) alebo JSON export/import.
 - Hostované cez **GitHub Pages**.
 
----
-
-## Verzia
-
-**1.0** · zostavené 19. 8. 2026, 15:08
