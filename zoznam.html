@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Školské pomôcky · príprava a nákup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+<style>
+  :root{
+    --paper:#FBFAF7; --grid:#E7ECF4;
+    --ink:#22346B; --ink-soft:#3f56a0; --margin:#D2504C;
+    --accent:#1E7F72; --accent-bg:#E4F1ED;
+    --qbg:#EDF0F8; --text:#20242E; --muted:#6A7180; --line:#E4E2DB; --done:#9AA1AF;
+    --g1:#4263EB; --g1b:#E6EBFC; --g2:#099268; --g2b:#DFF1EB; --g3:#E8590C; --g3b:#FCE9DF;
+    --g4:#7048E8; --g4b:#ECE7FC; --g5:#C2255C; --g5b:#F7E3EA; --g6:#66A80F; --g6b:#EBF4E0;
+    --g7:#0C8599; --g7b:#DFEFF2; --g8:#E03131; --g8b:#FBE4E4; --g9:#846358; --g9b:#EFEBE9;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+  body{
+    margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;color:var(--text);
+    background:var(--paper);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:23px 23px;line-height:1.45;
+  }
+  body[data-view="plan"] #shopView{display:none;}
+  body[data-view="shop"] #planView{display:none;}
+  body[data-view="plan"] .only-shop{display:none!important;}
+  body[data-view="shop"] .only-plan{display:none!important;}
+
+  /* ===== STATUS BAR ===== */
+  .statusbar{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.94);
+    backdrop-filter:saturate(1.4) blur(8px);-webkit-backdrop-filter:saturate(1.4) blur(8px);
+    border-bottom:1px solid var(--line);box-shadow:0 6px 20px -14px rgba(34,52,107,.5);}
+  .sb-inner{max-width:860px;margin:0 auto;padding:9px 16px;display:flex;align-items:center;gap:14px;}
+  .sb-brand{display:flex;align-items:center;gap:9px;flex:none;}
+  .sb-mark{width:30px;height:30px;border-radius:8px;flex:none;background:var(--ink);color:#fff;
+    display:grid;place-items:center;font-family:'Caveat',cursive;font-size:1.4rem;font-weight:700;line-height:1;box-shadow:inset 2px 0 0 var(--margin);}
+  .sb-brand .t{font-weight:700;font-size:.95rem;color:var(--ink);white-space:nowrap;}
+  .sb-brand .t small{display:block;font-weight:500;font-size:.72rem;color:var(--muted);}
+
+  .sb-grades{display:flex;gap:6px;align-items:center;overflow-x:auto;flex:1;padding:3px 2px;scrollbar-width:thin;-webkit-overflow-scrolling:touch;}
+  .sb-grades::-webkit-scrollbar{height:5px;}
+  .sb-grades::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px;}
+  .g-label{font-size:.74rem;color:var(--muted);font-weight:600;white-space:nowrap;flex:none;padding-right:2px;}
+  .gbtn{flex:none;width:30px;height:30px;border-radius:9px;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--muted);font:inherit;font-weight:700;font-size:.9rem;transition:.13s;}
+  .gbtn:hover{border-color:var(--ink-soft);}
+  .gbtn[data-g="1"]{color:var(--g1);} .gbtn[data-g="1"][aria-pressed="true"]{background:var(--g1);border-color:var(--g1);color:#fff;}
+  .gbtn[data-g="2"]{color:var(--g2);} .gbtn[data-g="2"][aria-pressed="true"]{background:var(--g2);border-color:var(--g2);color:#fff;}
+  .gbtn[data-g="3"]{color:var(--g3);} .gbtn[data-g="3"][aria-pressed="true"]{background:var(--g3);border-color:var(--g3);color:#fff;}
+  .gbtn[data-g="4"]{color:var(--g4);} .gbtn[data-g="4"][aria-pressed="true"]{background:var(--g4);border-color:var(--g4);color:#fff;}
+  .gbtn[data-g="5"]{color:var(--g5);} .gbtn[data-g="5"][aria-pressed="true"]{background:var(--g5);border-color:var(--g5);color:#fff;}
+  .gbtn[data-g="6"]{color:var(--g6);} .gbtn[data-g="6"][aria-pressed="true"]{background:var(--g6);border-color:var(--g6);color:#fff;}
+  .gbtn[data-g="7"]{color:var(--g7);} .gbtn[data-g="7"][aria-pressed="true"]{background:var(--g7);border-color:var(--g7);color:#fff;}
+  .gbtn[data-g="8"]{color:var(--g8);} .gbtn[data-g="8"][aria-pressed="true"]{background:var(--g8);border-color:var(--g8);color:#fff;}
+  .gbtn[data-g="9"]{color:var(--g9);} .gbtn[data-g="9"][aria-pressed="true"]{background:var(--g9);border-color:var(--g9);color:#fff;}
+  .g-quick{font:inherit;font-size:.74rem;font-weight:600;color:var(--ink-soft);background:none;border:none;cursor:pointer;white-space:nowrap;flex:none;padding:4px 2px;}
+  .g-quick:hover{text-decoration:underline;}
+
+  .sb-right{display:flex;align-items:center;gap:10px;flex:none;}
+  .barcta{font:inherit;font-weight:700;font-size:.85rem;cursor:pointer;border:none;border-radius:9px;padding:8px 13px;background:var(--ink);color:#fff;display:inline-flex;gap:7px;align-items:center;white-space:nowrap;transition:.13s;}
+  .barcta:hover{background:#1a2b5e;}
+  .barcta:disabled{background:#C7CBD4;cursor:not-allowed;}
+  .barcta .n{background:rgba(255,255,255,.25);border-radius:6px;padding:0 7px;font-variant-numeric:tabular-nums;}
+  .sb-prog{display:flex;align-items:center;gap:8px;}
+  .sb-bar{width:74px;height:7px;border-radius:999px;background:#EAE7E0;overflow:hidden;}
+  .sb-bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ink-soft),var(--accent));transition:width .3s;}
+  .sb-count{font-size:.82rem;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .backbtn{font:inherit;font-weight:600;font-size:.85rem;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:7px 12px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap;transition:.13s;}
+  .backbtn:hover{border-color:var(--ink);background:#F7F8FC;}
+  .iconbtn{width:34px;height:34px;flex:none;border-radius:9px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);display:grid;place-items:center;transition:.13s;}
+  .iconbtn:hover{border-color:var(--ink);background:#F7F8FC;}
+
+  @media (max-width:660px){
+    .sb-inner{flex-wrap:wrap;gap:9px 12px;padding:8px 12px;}
+    .sb-brand .t small{display:none;}
+    .sb-grades{order:3;flex-basis:100%;}
+    .g-label{display:none;}
+  }
+
+  /* ===== CONTENT ===== */
+  .wrap{max-width:860px;margin:0 auto;padding:18px 16px 90px;}
+  header.hero{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:24px 24px 20px 46px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.03),0 12px 34px -20px rgba(34,52,107,.35);}
+  header.hero::before{content:"";position:absolute;top:0;bottom:0;left:30px;width:2px;background:var(--margin);opacity:.6;}
+  .kicker{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+  h1{font-family:'Caveat',cursive;font-weight:700;font-size:2.8rem;line-height:1;margin:.06em 0 .12em;color:var(--ink);}
+  .sub{color:var(--muted);font-size:.95rem;margin:0;}
+  .badge{display:inline-block;margin-top:13px;font-size:.82rem;font-weight:600;color:var(--margin);background:#FBECEB;border:1px solid #F1CFCD;padding:5px 11px;border-radius:999px;}
+  .hgrades{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px;align-items:center;}
+  .hgrades .lbl{font-size:.8rem;color:var(--muted);font-weight:600;margin-right:2px;}
+
+  .steps-guide{display:flex;flex-wrap:wrap;gap:8px;margin:14px 4px 4px;}
+  .stepchip{font-size:.8rem;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px;display:inline-flex;gap:7px;align-items:center;}
+  .stepchip b{color:var(--ink);font-weight:700;}
+  .stepchip i{width:18px;height:18px;border-radius:50%;background:var(--ink);color:#fff;font-style:normal;font-weight:700;font-size:.7rem;display:grid;place-items:center;}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:14px 4px 10px;font-size:.82rem;color:var(--muted);}
+  .legend .lg-title{font-weight:600;color:var(--ink);}
+  .gcolors{display:flex;gap:5px;flex-wrap:wrap;}
+
+  section.group{margin:0 0 20px;}
+  .group-head{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;padding:0 4px;}
+  .group-head h2{font-size:1.02rem;font-weight:700;color:var(--ink);margin:0;}
+  .group-head .g-count{font-size:.8rem;color:var(--muted);font-weight:500;}
+  ul.list{list-style:none;margin:0;padding:0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  li.item{display:flex;align-items:center;gap:13px;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer;transition:background .12s;}
+  li.item:first-child{border-top:none;}
+  li.item:hover{background:#FAFAF7;}
+  .box{flex:none;width:22px;height:22px;border:2px solid #C7CBD4;border-radius:6px;display:grid;place-items:center;transition:.15s;background:#fff;}
+  .box svg{width:14px;height:14px;stroke:#fff;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.5);transition:.15s;}
+  li.item.done .box{background:var(--accent);border-color:var(--accent);}
+  li.item.done .box svg{opacity:1;transform:scale(1);}
+  .body{flex:1;min-width:0;}
+  .name{font-weight:600;font-size:.98rem;}
+  .note{font-size:.79rem;color:var(--muted);margin-top:1px;}
+  li.item.done .name{color:var(--done);text-decoration:line-through;text-decoration-color:#C7CBD4;}
+  li.item.done .note{color:#B4B9C2;}
+
+  .qtys{display:flex;gap:5px;flex:none;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:56%;}
+  .q{font-size:.78rem;font-weight:700;padding:3px 8px;border-radius:7px;white-space:nowrap;display:inline-flex;gap:4px;align-items:center;background:var(--qbg);color:var(--ink);}
+  .q .lbl{font-weight:700;opacity:.65;font-size:.72rem;}
+  .q.total{background:#EEEFF3;color:var(--ink);}
+  .q.buy{background:var(--ink);color:#fff;}
+  .q.txt{background:#F3F0E9;color:var(--muted);font-weight:600;}
+  .q.g1{background:var(--g1b);color:var(--g1);} .q.g2{background:var(--g2b);color:var(--g2);}
+  .q.g3{background:var(--g3b);color:var(--g3);} .q.g4{background:var(--g4b);color:var(--g4);}
+  .q.g5{background:var(--g5b);color:var(--g5);} .q.g6{background:var(--g6b);color:var(--g6);}
+  .q.g7{background:var(--g7b);color:var(--g7);} .q.g8{background:var(--g8b);color:var(--g8);}
+  .q.g9{background:var(--g9b);color:var(--g9);}
+  .gcolors .q{font-size:.76rem;}
+  li.item.done .q{opacity:.4;}
+
+  /* stepper */
+  .stock{display:inline-flex;align-items:center;gap:7px;margin-top:7px;flex-wrap:wrap;}
+  .stock-lbl{font-size:.76rem;font-weight:600;color:var(--muted);}
+  .stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;}
+  .stp{width:26px;height:26px;border:none;background:#F5F6FA;color:var(--ink);font:inherit;font-size:1rem;font-weight:700;cursor:pointer;line-height:1;transition:.12s;}
+  .stp:hover{background:var(--ink);color:#fff;}
+  .stp-in{width:40px;height:26px;border:none;text-align:center;font:inherit;font-size:.85rem;font-weight:700;color:var(--ink);background:#fff;-moz-appearance:textfield;}
+  .stp-in::-webkit-outer-spin-button,.stp-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .stp-in:focus{outline:2px solid var(--ink-soft);outline-offset:-2px;}
+  .need{font-size:.78rem;font-weight:700;color:var(--margin);}
+  .need.ok{color:var(--accent);}
+  li.item.done .stock{opacity:.5;}
+
+  .cta-wrap{margin-top:24px;display:flex;justify-content:center;}
+  .cta{font:inherit;font-weight:700;font-size:1rem;cursor:pointer;border:none;border-radius:12px;padding:15px 26px;background:var(--ink);color:#fff;display:inline-flex;gap:11px;align-items:center;box-shadow:0 12px 26px -12px rgba(34,52,107,.85);transition:.15s;}
+  .cta:hover{background:#1a2b5e;transform:translateY(-1px);}
+  .cta:disabled{background:#C7CBD4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .cta .n{background:rgba(255,255,255,.22);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums;}
+
+  .empty{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:30px 22px;text-align:center;color:var(--muted);font-size:.95rem;}
+  .empty b{color:var(--ink);display:block;font-size:1.05rem;margin-bottom:4px;}
+  .empty .cta{margin-top:14px;font-size:.9rem;padding:11px 20px;}
+
+  .tips{background:#fff;border:1px solid var(--line);border-left:3px solid var(--margin);border-radius:12px;padding:16px 18px;margin-top:24px;}
+  .tips h3{margin:0 0 8px;font-size:.95rem;color:var(--ink);}
+  .tips ul{margin:0;padding-left:18px;color:var(--muted);font-size:.87rem;}
+  .tips li{margin:3px 0;}
+  footer{text-align:center;color:var(--muted);font-size:.77rem;margin-top:24px;}
+
+  @media (max-width:520px){ h1{font-size:2.3rem;} header.hero{padding-left:40px;} .qtys{max-width:50%;} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto;}}
+  @media print{
+    .statusbar{display:none!important;}
+    body{background:#fff;} header.hero{box-shadow:none;}
+    .cta-wrap,.steps-guide{display:none!important;}
+    li.item{cursor:default;} ul.list,header.hero,.tips{break-inside:avoid;}
+    .wrap{padding-top:10px;}
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(15,20,40,.55);display:grid;place-items:center;padding:16px;}
+  .modal-overlay[hidden]{display:none;}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:400px;box-shadow:0 24px 60px -12px rgba(0,0,0,.45);overflow:hidden;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--line);}
+  .modal-head h3{margin:0;font-size:1.05rem;color:var(--ink);}
+  .modal-close{width:30px;height:30px;border:none;background:#F5F6FA;border-radius:8px;cursor:pointer;font-size:1.2rem;color:var(--muted);display:grid;place-items:center;line-height:1;}
+  .modal-close:hover{background:var(--line);}
+  .modal-tabs{display:flex;border-bottom:1px solid var(--line);}
+  .mtab{flex:1;padding:11px;font:inherit;font-size:.88rem;font-weight:600;color:var(--muted);background:#fff;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:.13s;}
+  .mtab:hover{color:var(--ink);}
+  .mtab.active{color:var(--ink);border-bottom-color:var(--ink);}
+  .modal-body{padding:20px;}
+  .modal-body[hidden]{display:none;}
+  .modal-hint{font-size:.84rem;color:var(--muted);margin:0 0 14px;line-height:1.5;}
+  .qr-wrap{display:flex;justify-content:center;margin:4px 0 16px;padding:14px;background:#FAFAFA;border:1px solid var(--line);border-radius:10px;}
+  .qr-wrap canvas,.qr-wrap img{display:block;}
+  .qr-url{font-size:.72rem;color:var(--muted);word-break:break-all;background:#F5F6FA;padding:8px 10px;border-radius:8px;margin-bottom:4px;user-select:all;}
+  .qr-warn{font-size:.78rem;color:var(--margin);font-weight:600;margin:8px 0 0;text-align:center;}
+  .io-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .io-btn{flex:1;min-width:120px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;padding:11px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.13s;}
+  .io-btn:hover{border-color:var(--ink);background:#F7F8FC;}
+  .io-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .io-btn.primary:hover{background:#1a2b5e;}
+  .io-sep{border:none;border-top:1px solid var(--line);margin:18px 0;}
+  .import-ok{font-size:.84rem;color:var(--accent);font-weight:600;text-align:center;margin-top:10px;display:none;}
+  .import-err{font-size:.84rem;color:var(--margin);font-weight:600;text-align:center;margin-top:10px;display:none;}
+  .raw-json{margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+  .raw-json summary{font-size:.82rem;font-weight:600;color:var(--ink-soft);cursor:pointer;list-style:none;}
+  .raw-json summary::-webkit-details-marker{display:none;}
+  .raw-json summary::before{content:"▸ ";}
+  .raw-json[open] summary::before{content:"▾ ";}
+  .raw-json summary:hover{color:var(--ink);}
+  .raw-textarea{width:100%;margin-top:8px;font:inherit;font-size:.75rem;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;color:var(--text);background:#F5F6FA;border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical;line-height:1.4;}
+  .raw-textarea:focus{outline:2px solid var(--ink-soft);outline-offset:-1px;}
+</style>
+</head>
+<body data-view="plan">
+
+<div class="statusbar">
+  <div class="sb-inner">
+    <div class="sb-brand"><div class="sb-mark" id="stepMark">1</div><div class="t"><span id="stepTitle">Príprava</span><small id="stepSub">vyber a označ, čo máš</small></div></div>
+    <div class="sb-grades only-plan" id="grades" role="group" aria-label="Vyber ročníky">
+      <span class="g-label">Ročníky:</span>
+      <button class="g-quick" id="selNone" type="button">zrušiť</button>
+    </div>
+    <div class="sb-right">
+      <button class="barcta only-plan" id="toShopBar" type="button">Na nákup <span class="n" id="barShopN">0</span> →</button>
+      <button class="backbtn only-shop" id="backBtn" type="button">← Úprava</button>
+      <div class="sb-prog only-shop" title="Nakúpené položky"><div class="sb-bar"><i id="barFill"></i></div><span class="sb-count" id="counter">0 / 0</span></div>
+      <button class="iconbtn only-shop" id="printBtn" type="button" title="Tlačiť / uložiť PDF" onclick="window.print()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      </button>
+      <button class="iconbtn" id="shareBtn" type="button" title="Preniesť na iné zariadenie">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ KROK 1: PRÍPRAVA ============ -->
+  <div id="planView">
+    <header class="hero">
+      <div class="kicker">Krok 1 z 2 · príprava</div>
+      <h1>Priprav si nákup</h1>
+      <p class="sub">Vyber ročníky, zadaj čo už máš doma a odškrtni, čo netreba. Potom vygeneruj čistý zoznam na nákup.</p>
+    </header>
+
+    <div class="steps-guide">
+      <span class="stepchip"><i>1</i> Vyber <b>ročníky</b> hore</span>
+      <span class="stepchip"><i>2</i> Zadaj <b>„už mám"</b> pri väčších počtoch</span>
+      <span class="stepchip"><i>3</i> <b>Odškrtni</b>, čo máš doma</span>
+      <span class="stepchip"><i>4</i> <b>Generuj</b> zoznam na nákup</span>
+    </div>
+
+    <div class="legend">
+      <span class="lg-title">Farby ročníkov:</span>
+      <span class="gcolors">
+        <span class="q g1">1.</span><span class="q g2">2.</span><span class="q g3">3.</span>
+        <span class="q g4">4.</span><span class="q g5">5.</span><span class="q g6">6.</span>
+        <span class="q g7">7.</span><span class="q g8">8.</span><span class="q g9">9.</span>
+      </span>
+    </div>
+
+    <div id="planLists"></div>
+
+    <div class="cta-wrap">
+      <button class="cta" id="toShopBottom" type="button">Generovať zoznam na nákup <span class="n" id="bottomShopN">0</span> →</button>
+    </div>
+
+    <div class="tips">
+      <h3>Nezabudni</h3>
+      <ul>
+        <li>Všetky trvalé pomôcky, odev a obuv <strong>označ priezviskom dieťaťa</strong>.</li>
+        <li>Prezuvky s uzavretou pätou alebo remienkom — <strong>nie nasúvacie šľapky</strong>.</li>
+        <li>Farby a štetce kupuj od českých/nemeckých výrobcov — čínske bývajú nekvalitné.</li>
+        <li>Obaly na zošity a učebnice dokúp podľa počtu a veľkosti až po ich založení.</li>
+        <li>Číslo zošita: 1. číslica = formát (4→A4, 5→A5, 6→A6), 2. = listy (×10), posledná = liniatúra (0 čistý, 1→20 mm, 2→16 mm, 3→12 mm, 4→8 mm, 5→štvorček 5×5, 10→štvorček 10×10).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ KROK 2: NÁKUP ============ -->
+  <div id="shopView">
+    <header class="hero">
+      <div class="kicker">Krok 2 z 2 · nakupujeme</div>
+      <h1>Nákupný zoznam</h1>
+      <p class="sub" id="shopSub">Odškrtávaj, čo hodíš do košíka.</p>
+      <div class="hgrades" id="shopGrades"></div>
+      <span class="badge">Kúpiť do 1. septembra</span>
+    </header>
+
+    <div id="shopLists"></div>
+    <div id="shopEmpty"></div>
+
+    <footer>Stav sa priebežne ukladá — nákup môžeš prerušiť a pokračovať neskôr.</footer>
+  </div>
+
+</div>
+
+<!-- ===== SHARE MODAL ===== -->
+<div class="modal-overlay" id="shareModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Preniesť na iné zariadenie</h3>
+      <button class="modal-close" id="modalClose" aria-label="Zavrieť">×</button>
+    </div>
+    <div class="modal-tabs" role="tablist">
+      <button class="mtab active" id="tabQrBtn" role="tab" aria-selected="true" aria-controls="tabQr">QR kód</button>
+      <button class="mtab" id="tabFileBtn" role="tab" aria-selected="false" aria-controls="tabFile">Export / Import</button>
+    </div>
+
+    <!-- Tab: QR -->
+    <div class="modal-body" id="tabQr" role="tabpanel">
+      <p class="modal-hint">Naskenuj QR kód na mobile — stav sa načíta automaticky (funguje v Claude artefakte, kde obe zariadenia otvárajú tú istú URL).</p>
+      <div class="qr-wrap" id="qrWrap"></div>
+      <div class="qr-url" id="qrUrl"></div>
+      <p class="qr-warn" id="qrWarn" hidden>⚠ URL je dlhá — skús Export / Import pre spoľahlivejší prenos.</p>
+    </div>
+
+    <!-- Tab: Export / Import -->
+    <div class="modal-body" id="tabFile" role="tabpanel" hidden>
+      <p class="modal-hint" id="fileTabHint">Exportuj stav ako malý JSON súbor, prenes ho na mobile (AirDrop, WhatsApp, Drive, e-mail) a importuj. Funguje aj offline a medzi rôznymi zariadeniami.</p>
+      <div class="io-row">
+        <button class="io-btn primary" id="exportBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportovať JSON
+        </button>
+        <label class="io-btn" id="importLabel">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importovať JSON
+          <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+        </label>
+      </div>
+      <div id="exportStatus" class="import-ok" style="display:none"></div>
+      <button class="io-btn" id="copyBtn" type="button" style="width:100%;margin-top:10px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Kopírovať stav do schránky
+      </button>
+      <div class="import-ok" id="importOk">✓ Stav načítaný — môžeš pokračovať v nákupe.</div>
+      <div class="import-err" id="importErr">✗ Nepodarilo sa načítať súbor. Skontroluj, že ide o správny JSON.</div>
+
+      <details class="raw-json">
+        <summary>Nefunguje export ani kopírovanie? Skús ručne</summary>
+        <p class="modal-hint" style="margin-top:10px">Klikni do poľa nižšie, označ všetko (Ctrl/Cmd+A) a skopíruj (Ctrl/Cmd+C). Toto funguje vždy, nezávisle od prehliadača.</p>
+        <textarea id="rawJsonArea" class="raw-textarea" readonly rows="6" onclick="this.select()"></textarea>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+// q = počty pre 1.–9. ročník (0 = netreba). variable:true = "podľa potreby".
+const DATA = [
+  { title:"Písacie potreby a rysovanie", items:[
+    {n:"Ceruza HB (alebo č. 2)", q:[2,2,2,2,1,1,1,1,1]},
+    {n:"Ceruza 2B", q:[2,2,2,2,1,1,1,1,1]},
+    {n:"Guma", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Strúhadlo", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Atramentové pero s náplňami", note:"prvé písanie perom", q:[2,0,0,0,0,0,0,0,0]},
+    {n:"Modré (čínske) pero s náhradami", q:[0,2,2,1,1,1,1,1,1]},
+    {n:"Zelené pero s náhradou", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Zvýrazňovacia fixka", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Ceruzkové pastelky (12 farieb)", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Fixky (6 farieb v sade)", q:[0,0,1,1,1,1,1,1,1]},
+    {n:"Pentelka na rysovanie s náhradami", q:[0,0,0,1,1,1,1,1,1]},
+    {n:"Pravítko 30 cm", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Pravítko s ryskou", q:[0,0,1,1,1,1,1,1,1]},
+    {n:"Kružidlo s náhradnými tuhami", q:[0,0,0,1,1,1,1,1,1]},
+    {n:"Uhlomer", q:[0,0,0,0,1,1,1,1,1]},
+    {n:"Kalkulačka", q:[0,0,0,0,0,0,0,1,1]},
+  ]},
+  { title:"Výtvarná výchova", items:[
+    {n:"Voskovky – nie čínske (12 farieb)", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Vodové farby (12 farieb)", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Temperové farby (12 farieb)", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Paleta na miešanie tempery", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Nožnice", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Plastelína (10 farieb)", q:[1,1,1,1,1,1,0,0,0]},
+    {n:"Lepidlo tyčinkové veľké", q:[1,1,1,2,2,2,2,2,2]},
+    {n:"Lepidlo disperzné (biele tekuté)", q:[1,1,1,2,2,2,2,0,0]},
+    {n:"Výkresy A4 (180 – 200 g)", q:[40,40,50,50,50,50,50,30,30]},
+    {n:"Výkresy A3 (180 – 200 g)", q:[10,10,15,15,15,15,15,10,10]},
+    {n:"Náčrtník A4", note:"2. ročník: formát A3", q:[2,1,2,1,1,1,1,0,0]},
+    {n:"Sada farebných papierov", q:[2,2,2,2,2,2,1,1,1]},
+    {n:"Čierny tuš", q:[0,0,1,1,1,1,1,1,1]},
+    {n:"Redisové pero č. 0,5 alebo 1", q:[0,0,1,1,1,1,1,1,1]},
+    {n:"Redisové pero č. 1,5 alebo 2", q:[0,0,1,1,1,1,1,1,1]},
+    {n:"Rúčka na redisové pero", q:[0,0,1,1,1,1,1,1,1]},
+    {n:"Okrúhly štetec č. 2", q:[0,0,0,1,1,1,1,1,1]},
+    {n:"Okrúhly štetec č. 4", q:[0,0,0,1,1,1,1,1,1]},
+    {n:"Okrúhly štetec č. 8", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Plochý štetec č. 4 alebo 6", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Plochý štetec č. 10 alebo 12", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Handrička na utieranie štetcov", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Nádoba na vodu pri maľovaní", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"PVC podložka na lavicu (na maľovanie)", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Škatuľa od topánok na VYV pomôcky", q:[1,1,1,1,1,1,1,1,1]},
+  ]},
+  { title:"Zošity", items:[
+    {n:"Zošit č. 624", note:"A6, 8 mm · ANJ / poznámky, zrkadielko", q:[0,0,0,2,1,1,1,0,0]},
+    {n:"Zošit č. 644", note:"A6, 8 mm · ANJ / poznámky", q:[2,2,3,3,3,3,3,3,3]},
+    {n:"Zošit č. 5110", note:"A5, štvorčeky 10×10 mm · MAT", q:[0,0,1,1,0,0,0,0,0]},
+    {n:"Zošit č. 511", note:"A5, 20 mm · SJL", q:[5,0,0,0,0,0,0,0,0]},
+    {n:"Zošit č. 512", note:"A5, 16 mm · SJL / ANJ", q:[0,20,20,1,0,0,0,0,0]},
+    {n:"Zošit č. 513", note:"A5, 12 mm · MAT (aj SJL/ANJ)", q:[3,10,10,10,0,0,0,0,0]},
+    {n:"Zošit č. 520", note:"A5, čistý · VLA/PRI/MAT", q:[2,2,2,2,0,0,0,0,0]},
+    {n:"Zošit č. 523", note:"A5, 12 mm · MAT / PRI", q:[0,5,15,15,0,0,0,0,0]},
+    {n:"Zošit č. 524", note:"A5, 8 mm · ľubovoľný predmet", q:[0,0,0,0,12,12,12,12,12]},
+    {n:"Zošit č. 544", note:"A5, 8 mm · MAT / ľubovoľný", q:[0,0,1,6,13,13,13,13,13]},
+    {n:"Zošit č. 564", note:"A5, 8 mm · ľubovoľný predmet", q:[0,0,0,0,2,2,2,2,2]},
+    {n:"Zošit č. 420", note:"A4, čistý bez linajok", q:[1,1,0,0,0,0,0,0,0]},
+    {n:"Zošit č. 440", note:"A4, čistý · MAT/VLA/PRI / ľubovoľný", q:[0,0,0,1,2,2,2,2,2]},
+    {n:"Zošit č. 460", note:"A4, čistý · ANJ / ľubovoľný", q:[1,1,0,0,5,5,5,5,5]},
+    {n:"Zošit č. 424", note:"A4, 8 mm · ľubovoľný predmet", q:[0,0,0,0,2,2,2,2,2]},
+    {n:"Zošit č. 425", note:"A4, štvorčeky 5×5 mm · MAT", q:[0,0,0,0,1,1,1,1,1]},
+    {n:"Zošit č. 444", note:"A4, 8 mm · VLA/PRI / ľubovoľný", q:[0,0,0,1,2,2,2,2,2]},
+    {n:"Zošit č. 464", note:"A4, 8 mm · VLA/PRI / ľubovoľný", q:[0,0,0,1,5,5,5,5,5]},
+    {n:"Notový zošit č. 51", note:"HUV", q:[1,1,1,1,1,1,1,0,0]},
+    {n:"Podložka do bezlinajkového zošita A5", q:[0,3,3,3,0,0,0,0,0]},
+    {n:"Podložka do bezlinajkového zošita A4", q:[0,1,0,0,5,5,5,5,5]},
+  ]},
+  { title:"Ostatné a spoločné", note:"pre každé dieťa zvlášť", items:[
+    {n:"Obaly na zošity", note:"podľa počtu a veľkosti založených zošitov", variable:true},
+    {n:"Obaly na učebnice", note:"podľa počtu a veľkosti učebníc", variable:true},
+    {n:"Prezuvky s uzavretou pätou (nie šľapky)", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Vešiak na vetrovku – detský (max. šírka 33 cm)", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Potreby na TV", note:"tepláky, cvičky/tenisky, tričko, ponožky, kraťasy, tenisová loptička, švihadlo + vak", q:[1,1,1,1,1,1,1,1,1]},
+    {n:"Hygienické vrecko", note:"uterák, mydlo v puzdre, PVC pohár, toal. papier, vreckovky + plátenné vrecko", q:[1,1,1,1,1,1,1,1,1]},
+  ]},
+];
+
+/* ===== vrstvené úložisko: window.storage + localStorage (obe voliteľné) ===== */
+const store = {
+  mem:{},
+  async get(k){
+    try{ const r=await window.storage.get(k); if(r&&r.value!=null) return r.value; }catch{}
+    try{ const v=localStorage.getItem('skola_'+k); if(v!=null) return v; }catch{}
+    return (k in this.mem)?this.mem[k]:null;
+  },
+  async set(k,v){
+    this.mem[k]=v;
+    try{ await window.storage.set(k,v); }catch{}
+    try{ localStorage.setItem('skola_'+k, v); }catch{}
+  }
+};
+const saveState = ()=>{
+  store.set("grades",JSON.stringify([...selected]));
+  store.set("owned",JSON.stringify(owned));
+  store.set("have",JSON.stringify(haveMap));
+  store.set("bought",JSON.stringify(bought));
+  store.set("view",view);
+};
+
+let selected = new Set([1,3]);
+let owned   = {};   // krok 1: "už mám doma / netreba"
+let haveMap = {};   // krok 1: počet ks, ktoré už mám (pri väčších počtoch)
+let bought  = {};   // krok 2: hodené do košíka
+let view    = "plan";
+
+const keyOf=(gi,ii)=>"g"+gi+"i"+ii;
+const requiredOf=item=>{ let s=0; for(const g of selected){ s+=(item.q[g-1]||0); } return s; };
+const relevant=item=>{ if(item.variable) return selected.size>0; for(const g of selected){ if((item.q[g-1]||0)>0) return true; } return false; };
+const haveOf=(item,id)=>Math.max(0,Math.min(requiredOf(item), haveMap[id]||0));
+const remainingOf=(item,id)=> item.variable ? 1 : (requiredOf(item)-haveOf(item,id));
+const isShopItem=(item,id)=> relevant(item) && !owned[id] && (item.variable ? true : remainingOf(item,id)>0);
+
+function chips(item, forShop){
+  if(item.variable) return `<span class="q txt">podľa potreby</span>`;
+  const gs=[...selected].sort((a,b)=>a-b);
+  let out=[], sum=0, cnt=0;
+  for(const g of gs){ const v=item.q[g-1]||0; if(v>0){ out.push(`<span class="q g${g}"><span class="lbl">${g}.</span>${v}</span>`); sum+=v; cnt++; } }
+  if(cnt>1) out.push(`<span class="q total">Σ&nbsp;${sum}</span>`);
+  if(forShop){ const id=item.__id, have=haveOf(item,id); if(have>0){ out.push(`<span class="q buy">kúpiť ${remainingOf(item,id)}</span>`); } }
+  return out.join("");
+}
+
+/* ---------- KROK 1 ---------- */
+function renderPlan(){
+  const root=document.getElementById("planLists");
+  root.innerHTML="";
+  if(selected.size===0){
+    root.innerHTML=`<div class="empty"><b>Vyber aspoň jeden ročník</b>Čísla ročníkov nájdeš v hornom paneli.</div>`;
+    updatePlanMeta(); return;
+  }
+  DATA.forEach((g,gi)=>{
+    const vis=g.items.filter(relevant); if(!vis.length) return;
+    const sec=document.createElement("section"); sec.className="group";
+    const noteHTML=g.note?` <span class="g-count">· ${g.note}</span>`:"";
+    sec.innerHTML=`<div class="group-head"><h2>${g.title}</h2><span class="g-count">${vis.length} položiek</span>${noteHTML}</div>`;
+    const ul=document.createElement("ul"); ul.className="list";
+    g.items.forEach((item,ii)=>{
+      if(!relevant(item)) return;
+      const id=keyOf(gi,ii); item.__id=id;
+      const req=item.variable?0:requiredOf(item);
+      const multi=req>1;
+      const have=multi?haveOf(item,id):0;
+      const li=document.createElement("li");
+      li.className="item"+(owned[id]?" done":"");
+      const stockHTML = multi ? `
+        <div class="stock">
+          <span class="stock-lbl">Už mám:</span>
+          <span class="stepper">
+            <button class="stp minus" type="button" aria-label="Uber">−</button>
+            <input class="stp-in" type="number" inputmode="numeric" min="0" max="${req}" value="${have}" aria-label="Počet, ktorý už mám">
+            <button class="stp plus" type="button" aria-label="Pridaj">+</button>
+          </span>
+          <span class="need ${have>=req?'ok':''}">${have>=req?'máš dosť ✓':'ešte kúpiť: '+(req-have)}</span>
+        </div>` : "";
+      li.innerHTML=`
+        <span class="box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <div class="body"><div class="name">${item.n}</div>${item.note?`<div class="note">${item.note}</div>`:""}${stockHTML}</div>
+        <div class="qtys">${chips(item,false)}</div>`;
+      li.addEventListener("click",()=>{ owned[id]=!owned[id]; li.classList.toggle("done",owned[id]); saveState(); updatePlanMeta(); });
+      const stock=li.querySelector(".stock");
+      if(stock){
+        stock.addEventListener("click",e=>e.stopPropagation());
+        const input=stock.querySelector(".stp-in"), need=stock.querySelector(".need");
+        const setHave=v=>{ v=Math.max(0,Math.min(req,parseInt(v,10)||0)); haveMap[id]=v; input.value=v;
+          const ok=v>=req; need.textContent=ok?"máš dosť ✓":"ešte kúpiť: "+(req-v); need.classList.toggle("ok",ok);
+          saveState(); updatePlanMeta(); };
+        stock.querySelector(".minus").addEventListener("click",()=>setHave((haveMap[id]||0)-1));
+        stock.querySelector(".plus").addEventListener("click",()=>setHave((haveMap[id]||0)+1));
+        input.addEventListener("change",()=>setHave(input.value));
+      }
+      ul.appendChild(li);
+    });
+    sec.appendChild(ul); root.appendChild(sec);
+  });
+  updatePlanMeta();
+}
+
+function countShop(){ let n=0; DATA.forEach((g,gi)=>g.items.forEach((item,ii)=>{ item.__id=keyOf(gi,ii); if(isShopItem(item,item.__id)) n++; })); return n; }
+function updatePlanMeta(){
+  const n=countShop();
+  document.getElementById("barShopN").textContent=n;
+  document.getElementById("bottomShopN").textContent=n;
+  const dis=(selected.size===0||n===0);
+  document.getElementById("toShopBar").disabled=dis;
+  document.getElementById("toShopBottom").disabled=dis;
+}
+
+/* ---------- KROK 2 ---------- */
+function renderShop(){
+  const root=document.getElementById("shopLists"), empty=document.getElementById("shopEmpty");
+  root.innerHTML=""; empty.innerHTML="";
+  // hlavička – vybrané ročníky + počet
+  const gs=[...selected].sort((a,b)=>a-b);
+  document.getElementById("shopGrades").innerHTML =
+    `<span class="lbl">Ročníky:</span>`+gs.map(g=>`<span class="q g${g}">${g}.</span>`).join("");
+  const total=countShop();
+  document.getElementById("shopSub").textContent = total
+    ? `${total} položiek na nákup. Odškrtávaj, čo hodíš do košíka.`
+    : `Nič netreba kúpiť.`;
+
+  if(total===0){
+    empty.innerHTML=`<div class="empty"><b>Hotovo — nič netreba kúpiť 🎉</b>Všetko máš doma alebo si to už odškrtol.<br><button class="cta" id="backEmpty" type="button">← Späť na úpravu</button></div>`;
+    empty.querySelector("#backEmpty").addEventListener("click",()=>setView("plan"));
+    updateShopProgress(); return;
+  }
+
+  DATA.forEach((g,gi)=>{
+    const vis=g.items.filter((item,ii)=>{ item.__id=keyOf(gi,ii); return isShopItem(item,item.__id); });
+    if(!vis.length) return;
+    const sec=document.createElement("section"); sec.className="group";
+    sec.innerHTML=`<div class="group-head"><h2>${g.title}</h2><span class="g-count">${vis.length}</span></div>`;
+    const ul=document.createElement("ul"); ul.className="list";
+    g.items.forEach((item,ii)=>{
+      const id=keyOf(gi,ii); item.__id=id;
+      if(!isShopItem(item,id)) return;
+      const li=document.createElement("li");
+      li.className="item"+(bought[id]?" done":"");
+      li.innerHTML=`
+        <span class="box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <div class="body"><div class="name">${item.n}</div>${item.note?`<div class="note">${item.note}</div>`:""}</div>
+        <div class="qtys">${chips(item,true)}</div>`;
+      li.addEventListener("click",()=>{ bought[id]=!bought[id]; li.classList.toggle("done",bought[id]); saveState(); updateShopProgress(); });
+      ul.appendChild(li);
+    });
+    sec.appendChild(ul); root.appendChild(sec);
+  });
+  updateShopProgress();
+}
+function updateShopProgress(){
+  let total=0,done=0;
+  DATA.forEach((g,gi)=>g.items.forEach((item,ii)=>{ item.__id=keyOf(gi,ii); if(isShopItem(item,item.__id)){ total++; if(bought[item.__id]) done++; } }));
+  document.getElementById("counter").textContent=`${done} / ${total}`;
+  document.getElementById("barFill").style.width=(total?done/total*100:0)+"%";
+}
+
+/* ---------- prepínanie krokov ---------- */
+function setView(v){
+  view=v; document.body.dataset.view=v;
+  document.getElementById("stepMark").textContent = v==="plan"?"1":"2";
+  document.getElementById("stepTitle").textContent = v==="plan"?"Príprava":"Nákup";
+  document.getElementById("stepSub").textContent = v==="plan"?"vyber a označ, čo máš":"odškrtávaj v obchode";
+  if(v==="shop") renderShop();
+  saveState();
+  window.scrollTo({top:0,behavior:"auto"});
+}
+document.getElementById("toShopBar").addEventListener("click",()=>{ if(countShop()>0) setView("shop"); });
+document.getElementById("toShopBottom").addEventListener("click",()=>{ if(countShop()>0) setView("shop"); });
+document.getElementById("backBtn").addEventListener("click",()=>setView("plan"));
+
+/* ---------- tlačidlá ročníkov ---------- */
+const gradesEl=document.getElementById("grades"), selNone=document.getElementById("selNone");
+for(let g=1;g<=9;g++){
+  const b=document.createElement("button");
+  b.className="gbtn"; b.type="button"; b.textContent=g; b.dataset.g=g;
+  b.setAttribute("aria-pressed", selected.has(g)?"true":"false");
+  b.setAttribute("aria-label", g+". ročník");
+  b.addEventListener("click",()=>{
+    if(selected.has(g)) selected.delete(g); else selected.add(g);
+    b.setAttribute("aria-pressed", selected.has(g)?"true":"false");
+    saveState(); renderPlan();
+  });
+  gradesEl.insertBefore(b, selNone);
+}
+selNone.addEventListener("click",()=>{
+  selected.clear();
+  document.querySelectorAll(".gbtn").forEach(b=>b.setAttribute("aria-pressed","false"));
+  saveState(); renderPlan();
+});
+
+/* ===== SHARE / TRANSFER ===== */
+function getStateObj(){
+  return { g:[...selected], o:owned, h:haveMap, b:bought, v:view };
+}
+function applyStateObj(s){
+  if(Array.isArray(s.g)) selected=new Set(s.g);
+  if(s.o && typeof s.o==='object'){ owned={}; Object.assign(owned,s.o); }
+  if(s.h && typeof s.h==='object'){ haveMap={}; Object.assign(haveMap,s.h); }
+  if(s.b && typeof s.b==='object'){ bought={}; Object.assign(bought,s.b); }
+  if(s.v) view=s.v;
+}
+function stateToHash(){
+  try{ return LZString.compressToEncodedURIComponent(JSON.stringify(getStateObj())); }catch{ return null; }
+}
+function buildShareUrl(){
+  const base=window.location.href.split('#')[0];
+  return base+'#s='+stateToHash();
+}
+
+// --- QR ---
+let qrInstance=null;
+function renderQR(){
+  const url=buildShareUrl();
+  document.getElementById("qrUrl").textContent=url;
+  const wrap=document.getElementById("qrWrap");
+  wrap.innerHTML="";
+  const warn=document.getElementById("qrWarn");
+  warn.hidden=url.length<=2000;
+  try{
+    qrInstance=new QRCode(wrap,{ text:url, width:200, height:200, correctLevel:QRCode.CorrectLevel.M });
+  }catch(e){
+    wrap.innerHTML=`<div style="color:var(--margin);font-size:.85rem;text-align:center;padding:10px">QR knižnica sa nenačítala.<br>Použi Export / Import.</div>`;
+  }
+}
+
+// --- Export ---
+function exportJSON(){
+  const json=JSON.stringify(getStateObj(),null,2);
+  const d=new Date(); const ds=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const filename=`nakup-stav-${ds}.json`;
+  const statusEl=document.getElementById("exportStatus");
+  const setStatus=(msg,ok)=>{ if(statusEl){ statusEl.textContent=msg; statusEl.style.color= ok? "var(--accent)" : "var(--margin)"; statusEl.style.display="block"; } };
+
+  let blobUrl=null;
+  try{
+    const blob=new Blob([json],{type:"application/json"});
+    blobUrl=URL.createObjectURL(blob);
+  }catch(e){
+    // Blob API zlyhal — priama záchrana cez schránku
+    copyStateToClipboard(json,setStatus);
+    return;
+  }
+
+  // 1) Skús priame stiahnutie cez <a download> (funguje vo väčšine bežných situácií)
+  let downloadTriggered=false;
+  try{
+    const a=document.createElement("a");
+    a.href=blobUrl; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    downloadTriggered=true;
+  }catch(e){ downloadTriggered=false; }
+
+  if(downloadTriggered){
+    setStatus("✓ Súbor sa sťahuje.", true);
+    setTimeout(()=>{ try{ URL.revokeObjectURL(blobUrl); }catch(e){} },4000);
+    return;
+  }
+
+  // 2) Záchrana: sťahovanie mohlo byť potichu zablokované (napr. v obmedzenom náhľade
+  //    bez povolenia na sťahovanie) — otvor obsah v novom okne, nech ho vieš uložiť ručne.
+  try{
+    const opened=window.open(blobUrl,"_blank");
+    if(opened){
+      setStatus("✓ Otvorené v novej karte — ulož si ju cez Ctrl/Cmd+S.", true);
+      setTimeout(()=>{ try{ URL.revokeObjectURL(blobUrl); }catch(e){} },10000);
+      return;
+    }
+  }catch(e){ /* pokračuj na poslednú záchranu */ }
+
+  // 3) Posledná záchrana — skopíruj JSON do schránky
+  copyStateToClipboard(json,setStatus);
+}
+
+function copyStateToClipboard(json,setStatus){
+  const text=json || JSON.stringify(getStateObj(),null,2);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      (setStatus||defaultStatus)("✓ Skopírované do schránky — vlož ho do poznámky alebo správy.", true);
+    }).catch(()=>{
+      (setStatus||defaultStatus)("✗ Kopírovanie zlyhalo. Skús QR kód.", false);
+    });
+  }else{
+    (setStatus||defaultStatus)("✗ Zariadenie nepodporuje kopírovanie. Skús QR kód.", false);
+  }
+}
+function defaultStatus(msg,ok){
+  const el=document.getElementById("exportStatus");
+  if(el){ el.textContent=msg; el.style.color= ok? "var(--accent)" : "var(--margin)"; el.style.display="block"; }
+}
+
+// --- Detekcia mobilného zariadenia (skryje Export, ukáže len Kopírovať) ---
+// Zámerne používame LEN user-agent signál. "pointer: coarse" sme odstránili —
+// na mnohých PC (dotykové notebooky, niektoré touchpady) vracia mylne true
+// a tlačidlo Export by sa potom skrylo aj na bežnom desktope.
+function isMobileDevice(){
+  try{
+    if(navigator.userAgentData && typeof navigator.userAgentData.mobile==="boolean") return navigator.userAgentData.mobile;
+  }catch(e){}
+  const ua=navigator.userAgent||"";
+  return /Android|iPhone|iPod|IEMobile|BlackBerry|Opera Mini|Windows Phone|\bMobile\b/i.test(ua);
+}
+
+// --- Import ---
+function importJSON(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const s=JSON.parse(e.target.result);
+      if(!s.g && !s.o && !s.b) throw new Error("Neznámy formát");
+      applyStateObj(s);
+      document.querySelectorAll(".gbtn").forEach((b,i)=>b.setAttribute("aria-pressed",selected.has(i+1)?"true":"false"));
+      saveState(); renderPlan();
+      setView(view);
+      document.getElementById("importOk").style.display="block";
+      document.getElementById("importErr").style.display="none";
+    }catch{
+      document.getElementById("importErr").style.display="block";
+      document.getElementById("importOk").style.display="none";
+    }
+  };
+  reader.readAsText(file);
+}
+
+// --- Modal ---
+const modal=document.getElementById("shareModal");
+function openModal(){
+  modal.hidden=false;
+  // reset tabs
+  showModalTab("qr");
+  renderQR();
+  document.getElementById("importOk").style.display="none";
+  document.getElementById("importErr").style.display="none";
+  document.getElementById("exportStatus").style.display="none";
+  // desktop: zobraz "Exportovať JSON"; mobil: skry ho, nechaj len "Kopírovať do schránky"
+  const mobile=isMobileDevice();
+  document.getElementById("exportBtn").style.display = mobile ? "none" : "inline-flex";
+  document.getElementById("copyBtn").classList.toggle("primary", mobile);
+  document.getElementById("fileTabHint").textContent = mobile
+    ? "Skopíruj stav do schránky a vlož ho na druhom zariadení pri importe (napr. cez poznámku alebo správu). Na import súboru použi tlačidlo nižšie."
+    : "Exportuj stav ako malý JSON súbor, prenes ho na mobile (AirDrop, WhatsApp, Drive, e-mail) a importuj. Funguje aj offline a medzi rôznymi zariadeniami.";
+  const rawArea=document.getElementById("rawJsonArea");
+  if(rawArea) rawArea.value=JSON.stringify(getStateObj(),null,2);
+}
+function closeModal(){ modal.hidden=true; }
+function showModalTab(tab){
+  const isQr=tab==="qr";
+  document.getElementById("tabQr").hidden=!isQr;
+  document.getElementById("tabFile").hidden=isQr;
+  document.getElementById("tabQrBtn").classList.toggle("active",isQr);
+  document.getElementById("tabFileBtn").classList.toggle("active",!isQr);
+  document.getElementById("tabQrBtn").setAttribute("aria-selected",isQr?"true":"false");
+  document.getElementById("tabFileBtn").setAttribute("aria-selected",isQr?"false":"true");
+}
+document.getElementById("shareBtn").addEventListener("click",openModal);
+document.getElementById("modalClose").addEventListener("click",closeModal);
+modal.addEventListener("click",e=>{ if(e.target===modal) closeModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!modal.hidden) closeModal(); });
+document.getElementById("tabQrBtn").addEventListener("click",()=>showModalTab("qr"));
+document.getElementById("tabFileBtn").addEventListener("click",()=>showModalTab("file"));
+document.getElementById("exportBtn").addEventListener("click",exportJSON);
+document.getElementById("copyBtn").addEventListener("click",()=>copyStateToClipboard(null,null));
+document.getElementById("importFile").addEventListener("change",e=>{ if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value=""; });
+
+/* ---------- init ---------- */
+(async function(){
+  // 1. Skontroluj URL hash (#s=...) — má prednosť pred uloženým stavom
+  let loadedFromHash=false;
+  try{
+    const hash=window.location.hash;
+    if(hash.startsWith("#s=")){
+      const compressed=hash.slice(3);
+      const json=LZString.decompressFromEncodedURIComponent(compressed);
+      if(json){
+        const s=JSON.parse(json);
+        applyStateObj(s);
+        loadedFromHash=true;
+        // vymaž hash z URL bez reload
+        history.replaceState(null,"",window.location.pathname+window.location.search);
+      }
+    }
+  }catch(e){ /* ignoruj poškodený hash */ }
+
+  // 2. Ak nebol hash, načítaj zo store (localStorage / window.storage)
+  if(!loadedFromHash){
+    const load=async(k)=>{ const v=await store.get(k); if(!v) return null; try{ return JSON.parse(v); }catch{ return null; } };
+    const sg=await load("grades"); if(Array.isArray(sg)) selected=new Set(sg);
+    const so=await store.get("owned"); if(so){ try{ owned=JSON.parse(so)||{}; }catch{} }
+    const sh=await store.get("have"); if(sh){ try{ haveMap=JSON.parse(sh)||{}; }catch{} }
+    const sb=await store.get("bought"); if(sb){ try{ bought=JSON.parse(sb)||{}; }catch{} }
+    const sv=await store.get("view"); if(sv) view=sv==="shop"?"shop":"plan";
+  }
+
+  document.querySelectorAll(".gbtn").forEach((b,i)=>b.setAttribute("aria-pressed", selected.has(i+1)?"true":"false"));
+  renderPlan();
+  setView(view);
+})();
+</script>
+</body>
+</html>
