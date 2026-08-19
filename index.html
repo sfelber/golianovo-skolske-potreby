@@ -163,6 +163,14 @@
   .tips ul{margin:0;padding-left:18px;color:var(--muted);font-size:.87rem;}
   .tips li{margin:3px 0;}
   footer{text-align:center;color:var(--muted);font-size:.77rem;margin-top:24px;}
+  footer a{color:var(--ink-soft);text-decoration:none;font-weight:600;}
+  footer a:hover{text-decoration:underline;}
+  .page-footer{border-top:1px solid var(--line);padding-top:16px;margin-top:32px;line-height:1.7;}
+  .page-footer p{margin:2px 0;}
+  .page-footer .ver{font-size:.72rem;color:var(--done);font-variant-numeric:tabular-nums;}
+  .help-note{font-size:.86rem;color:var(--muted);margin:8px 0 0;}
+  .help-note a{color:var(--ink-soft);text-decoration:none;font-weight:600;}
+  .help-note a:hover{text-decoration:underline;}
 
   @media (max-width:520px){ h1{font-size:2.3rem;} header.hero{padding-left:40px;} .qtys{max-width:50%;} }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto;}}
@@ -242,6 +250,7 @@
       <div class="kicker">Krok 1 z 2 · príprava</div>
       <h1>Priprav si nákup</h1>
       <p class="sub">Vyber ročníky, zadaj čo už máš doma a odškrtni, čo netreba. Potom vygeneruj čistý zoznam na nákup.</p>
+      <p class="help-note">Prvýkrát tu? Pozri si <a href="https://github.com/sfelber/golianovo-skolske-potreby#readme" target="_blank" rel="noopener">návod a nápovedu ↗</a> — vysvetľuje, ako aplikáciu používať krok po kroku.</p>
     </header>
 
     <div class="steps-guide">
@@ -293,6 +302,12 @@
 
     <footer>Stav sa priebežne ukladá — nákup môžeš prerušiť a pokračovať neskôr.</footer>
   </div>
+
+  <!-- ============ PÄTIČKA STRÁNKY ============ -->
+  <footer class="page-footer">
+    <p><a href="https://github.com/sfelber/golianovo-skolske-potreby#readme" target="_blank" rel="noopener">Návod a nápoveda ↗</a> · <a href="https://sfelber.github.io/golianovo-skolske-potreby/" target="_blank" rel="noopener">Domovská stránka</a></p>
+    <p class="ver">Verzia 1.0 · zostavené 19. 8. 2026, 15:08</p>
+  </footer>
 
 </div>
 
